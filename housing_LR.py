@@ -49,11 +49,16 @@ plt.figure(figsize=(15,8))
 sb.heatmap(train_df.corr(), annot=True, cmap="YlGnBu")
 
 from sklearn.linear_model import LinearRegression
-x_train, y_train = train_df.drop(['median_house_value'], axis=1), train_df['median_house_value']
-reg = LinearRegression()
-reg.fit(x_train, y_train)
+from sklearn.preprocessing import StandardScaler
 
-test_df = x_test.join(y_test)
+s = StandardScaler()
+
+x_train_s = s.fit_transform(x_train)
+x_train, y_train = train_df.drop(['median_house_value'], axis=1), train_df['median_house_value']
+lr = LinearRegression()
+lr.fit(x_train_s, y_train)
+
+_test_df = x_test.join(y_test)
 
 test_df['total_rooms'] = np.log(test_df['total_rooms'] + 1)
 test_df['total_bedrooms'] = np.log(test_df['total_bedrooms'] + 1)
@@ -67,5 +72,13 @@ test_df['household_ratio'] = test_df['total_bedrooms'] / test_df['households']
 
 x_test, y_test = test_df.drop(['median_house_value'], axis=1), test_df['median_house_value']
 
-reg.score(x_test, y_test)
+x_test_s = s.transform(x_test)
 
+lr.score(x_test_s, y_test)
+
+from sklearn.ensemble import RandomForestRegressor
+rfr = RandomForestRegressor()
+
+rfr.fit(x_train_s, y_train)
+
+rfr.score(x_test_s, y_test)
